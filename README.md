@@ -48,7 +48,6 @@
 * [🔬 Examples](#🔬-examples)
 * [🛠 Configuration](#🛠-configuration)
 * [📄 Acknowledgement](#📄-acknowledgement)
-* [🎉 Contributors](#🎉-contributors)
 * [✍️ Citation](#✍️-citation)
 
 
@@ -446,16 +445,6 @@ We thank the [InternAgent](https://github.com/InternScience/InternAgent) project
 We thank [RepoMaster](https://github.com/QuantaAlpha/RepoMaster) for the repository analysis toolkit that enables comprehensive code repository evaluation in our grounding process.
 
 ---
-
-
-
-## 🎉 Contributors
-
-<a href="https://github.com/zjunlp/InnoEval/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=zjunlp/InnoEval" /></a>
-
-
-We deeply appreciate the collaborative efforts of everyone involved. We will continue to enhance and maintain this repository over the long term. If you encounter any issues, feel free to submit them to us!
 
 
 
