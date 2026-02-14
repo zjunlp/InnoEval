@@ -1,21 +1,26 @@
 <div align="center">
   <h1>InnoEval: An Automated Framework for Research Idea Evaluation</h1>
 </div>
-
 <p align="center">
-  <a href="https://github.com/your-org/InnoEval">
-    <img src="https://img.shields.io/github/stars/your-org/InnoEval?style=social" alt="GitHub Stars">
+  <a href="https://github.com/zjunlp/InnoEval">
+    <img src="https://img.shields.io/github/stars/zjunlp/InnoEval?style=social" alt="GitHub Stars">
   </a>
-  <a href="https://github.com/your-org/InnoEval/blob/main/LICENSE">
+  <a href="https://github.com/zjunlp/InnoEval">
+  	<img src="https://awesome.re/badge.svg" alt="Awesome">
+  </a>
+  <a href="https://github.com/zjunlp/InnoEval/blob/main/LICENSE">
     <img src="https://img.shields.io/badge/License-MIT-green.svg" alt="License: MIT">
   </a>
-  <img src="https://img.shields.io/github/last-commit/your-org/InnoEval?color=blue" alt="Last Commit">
+  <img src="https://img.shields.io/github/last-commit/zjunlp/InnoEval?color=blue" alt="Last Commit">
   <img src="https://img.shields.io/badge/PRs-Welcome-red" alt="PRs Welcome">
 </p>
+
 
 <h5 align="center"> If you like our project, please give us a star on GitHub for the latest updates!</h5>
 
 ---
+
+![method](./asset/method.png)
 
 **InnoEval** is an automated evaluation framework designed for assessing research ideas and innovation proposals. It leverages multi-agent systems and LLMs to comprehensively evaluate the novelty, feasibility, and significance of research contributions.
 
@@ -34,27 +39,21 @@
 * **Batch Processing**
   <br> Point-wise and group-wise evaluation for large-scale dataset analysis
 
-  <!--
-  <div align=center>
-  <img src="./figs/pipeline.png" width="100%" height="60%" />
-  </div>
-  Add pipeline diagram here when available
-  -->
-
-<span id='contents'/>
 
 ## Table of Contents
 
-* <a href='#installation'>Installation</a>
-* <a href='#quickstart'>Quick Start</a>
-* <a href='#architecture'>Architecture</a>
-* <a href='#examples'>Examples</a>
-* <a href='#configuration'>Configuration</a>
-* <a href='#acknowledgement'>Acknowledgement</a>
+* [📥 Installation](#📥-installation)
+* [🎬 Quick Start](#🎬-quick-start)
+* [📂 Architecture](#📂-architecture)
+* [🔬 Examples](#🔬-examples)
+* [🛠 Configuration](#🛠-configuration)
+* [📄 Acknowledgement](#📄-acknowledgement)
+* [🎉 Contributors](#🎉-contributors)
+* [✍️ Citation](#✍️-citation)
 
-<span id='installation'/>
 
-## Installation
+
+## 📥 Installation
 
 ### 1. Clone the Repository
 
@@ -98,9 +97,9 @@ Required API keys:
 | `S2_API_KEY` | Semantic Scholar API key |
 | `GH_TOKEN` | GitHub token for repository analysis |
 
-<span id='quickstart'/>
 
-## Quick Start
+
+## 🎬 Quick Start
 
 ### 1. Single Idea Evaluation
 
@@ -153,9 +152,9 @@ python3 -m innoeval.pipeline.pair_evaluation
 
 These scripts read from `cache/dataset_conference_groups/` and do not re-run the pipeline.
 
-<span id='architecture'/>
 
-## Architecture
+
+## 📂 Architecture
 
 ### Directory Structure
 
@@ -249,9 +248,9 @@ The framework evaluates research ideas across five core dimensions:
 
 Custom evaluation metrics can be added through the `user_metric` parameter.
 
-<span id='examples'/>
 
-## Examples
+
+## 🔬 Examples
 
 ### Example 1: Evaluate from PDF URL
 
@@ -346,9 +345,9 @@ for item in items:
     print(f"Processing: {item.title}")
 ```
 
-<span id='configuration'/>
 
-## Configuration
+
+## 🛠 Configuration
 
 ### LLM Configuration
 
@@ -434,9 +433,9 @@ Pipeline results are cached in JSON format:
 }
 ```
 
-<span id='acknowledgement'/>
 
-## Acknowledgement
+
+## 📄 Acknowledgement
 
 This project builds upon and draws inspiration from the following open-source projects:
 
@@ -448,9 +447,25 @@ We thank [RepoMaster](https://github.com/QuantaAlpha/RepoMaster) for the reposit
 
 ---
 
-### Contributing
 
-We welcome contributions from the community! If you'd like to contribute, please fork the repository and submit a pull request.
+
+## 🎉 Contributors
+
+<a href="https://github.com/zjunlp/InnoEval/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=zjunlp/InnoEval" /></a>
+
+
+We deeply appreciate the collaborative efforts of everyone involved. We will continue to enhance and maintain this repository over the long term. If you encounter any issues, feel free to submit them to us!
+
+
+
+## ✍️ Citation
+
+If you find our work helpful, please use the following citations.
+
+```
+
+```
 
 ### License
 
