@@ -1,5 +1,5 @@
 <div align="center">
-  <h1>InnoEval: An Automated Framework for Research Idea Evaluation</h1>
+  <h1>InnoEval: On Research Idea Evaluation as a Knowledge-Grounded, Multi-Perspective Reasoning Problem</h1>
 </div>
 <p align="center">
   <a href="">📄arXiv</a> •
