@@ -3,9 +3,6 @@
 </div>
 <p align="center">
   <a href="https://github.com/zjunlp/InnoEval">
-    <img src="https://img.shields.io/github/stars/zjunlp/InnoEval?style=social" alt="GitHub Stars">
-  </a>
-  <a href="https://github.com/zjunlp/InnoEval">
   	<img src="https://awesome.re/badge.svg" alt="Awesome">
   </a>
   <a href="https://github.com/zjunlp/InnoEval/blob/main/LICENSE">
