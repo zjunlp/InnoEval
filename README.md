@@ -2,6 +2,10 @@
   <h1>InnoEval: An Automated Framework for Research Idea Evaluation</h1>
 </div>
 <p align="center">
+  <a href="">📄arXiv</a> •
+  <a href="http://innoeval.zjukg.cn/">🌐Demo</a>
+</p>
+<p align="center">
   <a href="https://github.com/zjunlp/InnoEval">
   	<img src="https://awesome.re/badge.svg" alt="Awesome">
   </a>
