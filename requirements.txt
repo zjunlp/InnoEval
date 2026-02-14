@@ -1,0 +1,15 @@
+beautifulsoup4
+dspy-ai
+grep-ast
+httpx
+networkx
+numpy
+openai
+pdfplumber
+PyYAML
+requests
+sentence-transformers
+tiktoken
+tqdm
+tree-sitter
+tree-sitter-language-pack
