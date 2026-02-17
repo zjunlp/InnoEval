@@ -2,7 +2,7 @@
   <h1>InnoEval: On Research Idea Evaluation as a Knowledge-Grounded, Multi-Perspective Reasoning Problem</h1>
 </div>
 <p align="center">
-  <a href="">📄arXiv</a> •
+  <a href="https://arxiv.org/abs/2602.14367">📄arXiv</a> •
   <a href="http://innoeval.zjukg.cn/">🌐Demo</a>
 </p>
 <p align="center">
@@ -15,6 +15,7 @@
   <img src="https://img.shields.io/github/last-commit/zjunlp/InnoEval?color=blue" alt="Last Commit">
   <img src="https://img.shields.io/badge/PRs-Welcome-red" alt="PRs Welcome">
 </p>
+
 
 
 <h5 align="center"> If you like our project, please give us a star on GitHub for the latest updates!</h5>
@@ -454,7 +455,15 @@ We thank [RepoMaster](https://github.com/QuantaAlpha/RepoMaster) for the reposit
 If you find our work helpful, please use the following citations.
 
 ```
-
+@misc{qiao2026innoevalresearchideaevaluation,
+      title={InnoEval: On Research Idea Evaluation as a Knowledge-Grounded, Multi-Perspective Reasoning Problem}, 
+      author={Shuofei Qiao and Yunxiang Wei and Xuehai Wang and Bin Wu and Boyang Xue and Ningyu Zhang and Hossein A. Rahmani and Yanshan Wang and Qiang Zhang and Keyan Ding and Jeff Z. Pan and Huajun Chen and Emine Yilmaz},
+      year={2026},
+      eprint={2602.14367},
+      archivePrefix={arXiv},
+      primaryClass={cs.CL},
+      url={https://arxiv.org/abs/2602.14367}, 
+}
 ```
 
 ### License
