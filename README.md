@@ -164,13 +164,13 @@ InnoEval/
 ├── config/                     # Configuration files
 │   ├── LLM.env                 # API keys (not tracked)
 │   ├── LLM.env.example         # Example configuration
-│   └── kaggle.json             # Kaggle API config
+│   ├── kaggle.json             # Kaggle API config
+│   └── reviewer_personas.json  # Reviewer personas
 ├── dataset/                    # Evaluation datasets
 │   ├── conference_points.jsonl # Point-wise dataset
 │   ├── conference_groups.json  # Group-wise dataset
 │   └── conference_pairs_*.json # Pair datasets
 ├── cache/                      # Pipeline results cache
-│   └── reviewer_personas.json  # Reviewer personas
 └── innoeval/                   # Main package
     ├── mas/                    # Multi-Agent System
     │   ├── agents/             # Agent implementations
@@ -265,7 +265,7 @@ async def evaluate_paper():
         input_type="pdf",
         pdf_url="https://openreview.net/pdf?id=YOUR_PAPER_ID",
         cache_path=Path("cache/my_paper.json"),
-        persona_path=Path("cache/reviewer_personas.json"),
+        persona_path=Path("config/reviewer_personas.json"),
         research_params={
             "title": "Your Paper Title",
             "after": "2022-01-01",

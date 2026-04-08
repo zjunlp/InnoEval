@@ -14,7 +14,7 @@ Usage:
 
 Required config:
     - Set API keys in config/LLM.env
-    - Ensure reviewer_personas.json exists in cache/ directory
+    - Ensure reviewer_personas.json exists in config/ directory
 """
 
 import asyncio
@@ -130,13 +130,13 @@ def build_cache_path_for_paper(
 
 
 def find_persona_path() -> Path:
-    """Read reviewer_personas.json only from cache; fail if missing."""
-    cache_dir = project_root / "cache"
-    persona_path = cache_dir / "reviewer_personas.json"
+    """Read reviewer_personas.json from config; fail if missing."""
+    config_dir = project_root / "config"
+    persona_path = config_dir / "reviewer_personas.json"
     if not persona_path.exists():
         raise FileNotFoundError(
             f"Persona file not found: {persona_path}. "
-            "Please put reviewer_personas.json under cache directory."
+            "Please put reviewer_personas.json under config directory."
         )
     return persona_path
 
@@ -473,6 +473,4 @@ if __name__ == "__main__":
 
         traceback.print_exc()
         sys.exit(1)
-
-
 

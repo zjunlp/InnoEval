@@ -71,7 +71,7 @@ class GroundingAgent(BaseAgent):
         for part_name, claims in claims_dict.items():
             print(f"\n📝 Processing part: {part_name} ({len(claims)} claims)")
 
-            # 跳过空的 part
+            # Skip empty parts
             if not claims or len(claims) == 0:
                 print(f"  ⏭️  Skipping {part_name} (empty)")
                 continue
@@ -535,17 +535,17 @@ Provide a summary of the repository's implementation and experimental contributi
         params: Dict[str, Any] = None
     ) -> Dict[str, Dict[str, List[Dict[str, Any]]]]:
         """
-        消融实验：直接对所有报告进行 summary，不按 part 分组。
+        Ablation experiment: directly summarize all reports without grouping by parts.
         
         Args:
-            reports_data: 报告数据 {web_reports: [...], code_reports: [...], paper_reports: [...]}
-            idea_text: 完整的 idea 文本（通过 Idea.get_full_text() 获得）
-            params: Grounding 参数（包含 title 等）
+            reports_data: Report data {web_reports: [...], code_reports: [...], paper_reports: [...]}
+            idea_text: Full idea text (obtained via Idea.get_full_text())
+            params: Grounding parameters (including title, etc.)
         
         Returns:
-            新格式的 grounding_result: {"_all": {report_type: [{summary, score, report_id}, ...]}}
+            New format grounding_result: {"_all": {report_type: [{summary, score, report_id}, ...]}}
         """
-        # 初始化结果结构
+        # Initialize result structure
         results = {
             "_all": {
                 "web_report": [],
@@ -554,7 +554,7 @@ Provide a summary of the repository's implementation and experimental contributi
             }
         }
         
-        # 处理每类报告
+        # Process each type of report
         report_types = {
             "web_report": reports_data.get("web_reports", []),
             "code_report": reports_data.get("code_reports", []),
@@ -574,13 +574,13 @@ Provide a summary of the repository's implementation and experimental contributi
                     continue
                 
                 try:
-                    # 使用 _do_extract 方法进行 summary
-                    # 传入整个 idea_text 而不是单个 part
+                    # Use _do_extract method for summary
+                    # Pass the entire idea_text instead of individual parts
                     summary, score = await self._do_extract(
                         report_type=report_type,
                         report=report,
-                        idea_part=idea_text,  # 传入完整 idea 文本
-                        part_name="_all",  # 标记为整体处理
+                        idea_part=idea_text,  # Pass full idea text
+                        part_name="_all",  # Mark as overall processing
                         params=params or {}
                     )
                     

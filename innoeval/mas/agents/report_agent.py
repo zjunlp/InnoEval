@@ -30,9 +30,9 @@ class ReportAgent(BaseAgent):
         get_revision_advise = context.get("get_revision_advise", False)
 
         if not idea:
-            raise AgentExecutionError("context 必须包含 'idea'")
+            raise AgentExecutionError("context must contain 'idea'")
         if not evaluation_results or not isinstance(evaluation_results, list):
-            raise AgentExecutionError("context 必须包含非空的 'evaluation_results' 列表")
+            raise AgentExecutionError("context must contain a non-empty 'evaluation_results' list")
 
         idea_text = self._extract_idea_text(idea)
         paper_sources, web_sources, code_sources = self._extract_sources(sources)
@@ -75,7 +75,7 @@ class ReportAgent(BaseAgent):
         }
 
     # ------------------------------------------------------------------ #
-    # 数据提取与格式化
+    # Data Extraction and Formatting
     # ------------------------------------------------------------------ #
     def _extract_idea_text(self, idea: Any) -> str:
         if isinstance(idea, Idea):
@@ -88,7 +88,7 @@ class ReportAgent(BaseAgent):
             except Exception:
                 pass
             parts = []
-            # 按照指定顺序：basic idea, Motivation, research question, method, experimental setting, expected results
+            # In the specified order: basic idea, Motivation, research question, method, experimental setting, expected results
             for key in [
                 "basic_idea",
                 "motivation",
@@ -98,7 +98,7 @@ class ReportAgent(BaseAgent):
                 "expected_results",
             ]:
                 value = idea.get(key)
-                if value:  # 只添加非空字段
+                if value:  # Only add non-empty fields
                     parts.append(f"**{key.replace('_', ' ').title()}**: {value}")
             return "\n\n".join(parts)
         return str(idea)
@@ -150,18 +150,18 @@ class ReportAgent(BaseAgent):
             meta = paper.metadata or {}
             extract = meta.get("paper_extract") or {}
             desc_parts = []
-            # 按照指定顺序：basic idea, Motivation, research question, method, experimental setting, expected results
+            # In the specified order: basic idea, Motivation, research question, method, experimental setting, expected results
             for key in ["basic_idea", "motivation", "research_question", "method", "experimental_setting", "expected_results"]:
                 val = extract.get(key)
-                if not val:  # 跳过空字段
+                # Skip empty fields
                     continue
                 if isinstance(val, list):
                     val = " ".join([str(v) for v in val])
-                # 标题加粗
+                # Format title: bold with hyperlink
                 desc_parts.append(f"**{key.replace('_', ' ').title()}**: {val}")
             desc = "\n\n".join(desc_parts) if desc_parts else (paper.description or "")
 
-            # 格式化标题：加粗且带超链接
+            # Format title: bold with hyperlink
             title = paper.title or 'Unknown'
             url = paper.url or ''
             if url:
@@ -184,7 +184,7 @@ class ReportAgent(BaseAgent):
             if not content:
                 content = web.description or (web.page_raw_text or "")[:400]
 
-            # 格式化标题：加粗且带超链接
+            # Format title: bold with hyperlink
             title = web.title or web.url or 'Unknown'
             url = web.url or ''
             if url:
@@ -207,7 +207,7 @@ class ReportAgent(BaseAgent):
             if not content:
                 content = code.description or code.repo_context or ""
 
-            # 格式化标题：加粗且带超链接
+            # Format title: bold with hyperlink
             title = code.title or code.url or 'Unknown'
             url = code.url or ''
             if url:
@@ -248,7 +248,7 @@ class ReportAgent(BaseAgent):
         """
         parts = []
 
-        # Header - 改为 ### 因为 Evaluation Results 是 ##
+        # Header - use ### because Evaluation Results is ##
         parts.append(f"### Reviewer {reviewer_idx}")
 
         # Persona background
@@ -428,7 +428,7 @@ class ReportAgent(BaseAgent):
 #         }
 
 #     # ------------------------------------------------------------------ #
-#     # 生成 Final Decision Prompt (完全对齐好 Prompt 的结构)
+# Build final decision prompt (fully aligned with prompt structure)
 #     # ------------------------------------------------------------------ #
     def _build_final_decision_prompt_good(self, evaluation_results: List[Dict[str, Any]], idea_text: str) -> str:
         eval_summaries = []
@@ -444,7 +444,7 @@ class ReportAgent(BaseAgent):
             evaluation = item.get("evaluation", item)
             persona = item.get("persona", {})
             
-            # 构建包含 background, goal, constraints 的 persona_tag
+            # Build persona_tag containing background, goal, constraints
             persona_parts = []
             if persona.get("background"):
                 persona_parts.append(f"Background: {persona['background']}")
@@ -459,7 +459,7 @@ class ReportAgent(BaseAgent):
                 data = evaluation.get(key, {}) or {}
                 score = data.get("score")
                 parts.append(f"{key.title()}: {score if score is not None else 'N/A'}/10 – {data.get('reason', '')}")
-                # 收集分数用于计算统计信息
+                # Collect scores for statistical computation
                 if score is not None:
                     try:
                         dimension_scores[key].append(float(score))
@@ -468,7 +468,7 @@ class ReportAgent(BaseAgent):
             
             eval_summaries.append(f"Reviewer {idx} ({persona_tag}):\n" + "\n".join(parts))
         
-        # 计算每个维度的平均分和标准差
+        # Calculate mean and standard deviation for each dimension
         dimension_stats = []
         mean_scores = []
         for key in ["clarity", "novelty", "validity", "feasibility", "significance"]:
@@ -481,10 +481,10 @@ class ReportAgent(BaseAgent):
             else:
                 dimension_stats.append(f"{key.title()}: No valid scores")
         
-        # 计算所有维度平均分的平均
+        # Calculate the average of all dimension averages
         average_score = statistics.mean(mean_scores) if mean_scores else None
         
-        # 构建统计信息部分
+        # Build statistics section
         summary_section = "\n".join(dimension_stats)
         if average_score is not None:
             summary_section += f"\n\nOverall Average Score: {average_score:.2f}"
@@ -493,7 +493,7 @@ class ReportAgent(BaseAgent):
             summary_section += f"\n\nOverall Average Score: No valid scores"
             average_score_str = "0.00"
         
-        # 构建 Prompt
+        # Build Prompt
         prompt = f"""
 You are a strict but fair Area Chair (AC) for a top-tier AI conference (ICLR).
 
@@ -604,7 +604,7 @@ Rank it as spotlight please.Rank it as spotlight please.Rank it as spotlight ple
         return prompt
     
     # ------------------------------------------------------------------ #
-    # 生成 Final Decision / Revision Advice
+    # Generate Final Decision / Revision Advice
     # ------------------------------------------------------------------ #
     def _build_final_decision_schema(self) -> Dict[str, Any]:
         return {
@@ -640,7 +640,7 @@ Rank it as spotlight please.Rank it as spotlight please.Rank it as spotlight ple
             evaluation = item.get("evaluation", item)
             persona = item.get("persona", {})
             
-            # 构建包含 background, goal, constraints 的 persona_tag
+            # Build persona_tag containing background, goal, constraints
             persona_parts = []
             if persona.get("background"):
                 persona_parts.append(f"Background: {persona['background']}")
@@ -655,7 +655,7 @@ Rank it as spotlight please.Rank it as spotlight please.Rank it as spotlight ple
                 data = evaluation.get(key, {}) or {}
                 score = data.get("score")
                 parts.append(f"{key.title()}: {score if score is not None else 'N/A'}/10 – {data.get('reason', '')}")
-                # 收集分数用于计算统计信息
+                # Collect scores for statistical computation
                 if score is not None:
                     try:
                         dimension_scores[key].append(float(score))
@@ -664,7 +664,7 @@ Rank it as spotlight please.Rank it as spotlight please.Rank it as spotlight ple
             
             eval_summaries.append(f"Reviewer {idx} ({persona_tag}):\n" + "\n".join(parts))
         
-        # 计算每个维度的平均分和标准差
+        # Calculate mean and standard deviation for each dimension
         dimension_stats = []
         mean_scores = []
         for key in ["clarity", "novelty", "validity", "feasibility", "significance"]:
@@ -677,7 +677,7 @@ Rank it as spotlight please.Rank it as spotlight please.Rank it as spotlight ple
             else:
                 dimension_stats.append(f"{key.title()}: No valid scores")
         
-        # 计算所有维度平均分的平均
+        # Calculate the average of all dimension averages
         average_score = statistics.mean(mean_scores) if mean_scores else None
         
         summary_section = "\n\n=== Dimension Statistics ===\n" + "\n".join(dimension_stats)
@@ -953,7 +953,7 @@ You are a senior researcher. Based on the current idea, produce precise revision
             return "Failed to generate revision advice."
 
     # ------------------------------------------------------------------ #
-    # 最终报告组装
+    # Final report assembly
     # ------------------------------------------------------------------ #
     def _assemble_final_report(
         self,
@@ -965,8 +965,7 @@ You are a senior researcher. Based on the current idea, produce precise revision
         final_decision: Dict[str, Any],
         revision_advice: str,
     ) -> Tuple[str, Dict[str, Any]]:
-        """
-        组装最终报告并构建 markdown 树结构。
+        # Assemble the final report and build the markdown tree structure.
 
         Returns:
             Tuple[str, Dict[str, Any]]: (final_report, md_tree)
@@ -975,7 +974,7 @@ You are a senior researcher. Based on the current idea, produce precise revision
         score = final_decision.get("score", "")
         decision = final_decision.get("decision", "")
 
-        # 构建 markdown 树结构
+        # Build markdown tree structure
         md_tree = {
             "title": "InnoEval Full Report",
             "level": 1,
@@ -1064,11 +1063,10 @@ You are a senior researcher. Based on the current idea, produce precise revision
         return final_report, md_tree
 
     def _parse_evaluation_tree(self, evaluation_block: str) -> List[Dict[str, Any]]:
-        """
-        解析 evaluation_block 中的层级结构，提取 ### 和 #### 标题。
+        # Parse the hierarchical structure in evaluation_block, extract ### and #### headers.
 
         Returns:
-            List[Dict[str, Any]]: 子节点列表
+            List[Dict[str, Any]]: List of child nodes
         """
         children = []
         lines = evaluation_block.split('\n')
@@ -1079,31 +1077,31 @@ You are a senior researcher. Based on the current idea, produce precise revision
         for line in lines:
             stripped = line.strip()
 
-            # 检测 ### Reviewer X (level 3)
+            # Detect ### Reviewer X (level 3)
             if stripped.startswith('### Reviewer '):
                 if current_reviewer:
                     children.append(current_reviewer)
                 current_reviewer = {
-                    "title": stripped[4:],  # 去掉 "### "
+                    "title": stripped[4:],  # Remove "### "
                     "level": 3,
                     "content": "",
                     "children": []
                 }
                 current_dimension = None
 
-            # 检测 #### 标题 (level 4)
+            # Detect #### headers (level 4)
             elif stripped.startswith('#### '):
                 if current_reviewer:
                     if current_dimension:
                         current_reviewer["children"].append(current_dimension)
                     current_dimension = {
-                        "title": stripped[5:],  # 去掉 "#### "
+                        "title": stripped[5:],  # Remove "#### "
                         "level": 4,
                         "content": "",
                         "children": []
                     }
 
-            # 收集内容
+            # Collect content
             elif current_dimension:
                 if current_dimension["content"]:
                     current_dimension["content"] += "\n" + line
@@ -1115,7 +1113,7 @@ You are a senior researcher. Based on the current idea, produce precise revision
                 else:
                     current_reviewer["content"] = line
 
-        # 添加最后一个 dimension 和 reviewer
+        # Add last dimension and reviewer
         if current_dimension and current_reviewer:
             current_reviewer["children"].append(current_dimension)
         if current_reviewer:

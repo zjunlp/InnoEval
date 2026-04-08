@@ -48,16 +48,16 @@ logger = logging.getLogger(__name__)
 
 
 # --------------------------------------------------------------------------- #
-# 基础工具函数
+# Basic Utility Functions
 # --------------------------------------------------------------------------- #
 def load_pipeline_result(file_path: Path) -> Dict[str, Any]:
-    """加载 pipeline_result.json，如不存在则返回默认结构。"""
+    """Load pipeline_result.json, return default structure if not exists."""
     if file_path.exists():
         try:
             with open(file_path, "r", encoding="utf-8") as f:
                 data = json.load(f)
         except Exception as e:  # noqa: BLE001
-            logger.warning(f"读取 {file_path} 失败，使用空结构: {e}")
+            logger.warning(f"Failed to read {file_path}, using empty structure: {e}")
             data = {}
     else:
         data = {}
@@ -83,7 +83,7 @@ def load_pipeline_result(file_path: Path) -> Dict[str, Any]:
 
 
 def save_pipeline_result(file_path: Path, data: Dict[str, Any]) -> None:
-    """保存 pipeline_result.json。"""
+    """Save pipeline_result.json."""
     file_path.parent.mkdir(parents=True, exist_ok=True)
     with open(file_path, "w", encoding="utf-8") as f:
         json.dump(data, f, indent=2, ensure_ascii=False)
@@ -91,7 +91,7 @@ def save_pipeline_result(file_path: Path, data: Dict[str, Any]) -> None:
 
 
 def update_pipeline_result(file_path: Path, **kwargs: Any) -> None:
-    """更新 pipeline_result.json 中的字段。"""
+    """Update fields in pipeline_result.json."""
     data = load_pipeline_result(file_path)
     for key, value in kwargs.items():
         if value is not None:
@@ -135,7 +135,7 @@ def load_environment_variables() -> bool:
 
 
 def load_personas(personas_file_path: Path, num_personas: int = 3) -> List[Dict[str, Any]]:
-    """读取 reviewer_personas.json，逻辑与旧版一致。"""
+    """Load personas from reviewer_personas.json, logic consistent with old version."""
     logger.info(f"Loading personas from {personas_file_path}")
 
     if not personas_file_path.exists():
@@ -163,7 +163,7 @@ def load_personas(personas_file_path: Path, num_personas: int = 3) -> List[Dict[
 
 def has_cache(cached_data: Dict[str, Any], cache_key: str, check_func: Optional[Callable[[Any], bool]] = None) -> bool:
     """
-    检查缓存中是否存在指定 key 的有效数据。
+    Check if valid data exists for the specified key in cache.
     """
     if cache_key not in cached_data:
         return False
@@ -180,10 +180,10 @@ def has_cache(cached_data: Dict[str, Any], cache_key: str, check_func: Optional[
 
 
 # --------------------------------------------------------------------------- #
-# 报告提取辅助
+# Report Extraction Helper
 # --------------------------------------------------------------------------- #
 def _extract_report_id(src: Source, fallback_prefix: str, idx: int) -> str:
-    """从 Source 构造 report_id。"""
+    """Construct report_id from Source."""
     meta = src.metadata or {}
     if meta.get("report_id"):
         return str(meta["report_id"])
@@ -198,7 +198,7 @@ def _extract_report_id(src: Source, fallback_prefix: str, idx: int) -> str:
 
 def build_reports_from_search_results(search_results: SearchResults) -> Dict[str, List[Dict[str, Any]]]:
     """
-    将 SearchResults 中的 metadata.*_report/paper_extract 提炼为 grounding 所需的 reports。
+    Extract metadata.*_report/paper_extract from SearchResults as reports for grounding.
     """
     web_reports: List[Dict[str, Any]] = []
     code_reports: List[Dict[str, Any]] = []
@@ -266,17 +266,17 @@ def build_reports_from_search_results(search_results: SearchResults) -> Dict[str
 
 
 # --------------------------------------------------------------------------- #
-# SingleIdeaPipeline 类
+# SingleIdeaPipeline Class
 # --------------------------------------------------------------------------- #
 class SingleIdeaPipeline:
     """
-    单个 Idea 的完整处理 Pipeline。
+    Complete processing pipeline for a single Idea.
 
-    封装从 PDF URL 或 Text 到 final_report 的完整流程，支持 cache 管理和参数化配置。
+    Encapsulates the full flow from PDF URL or Text to final_report, with cache management and parameterized configuration.
 
-    支持两种输入模式：
-    - input_type="pdf": 从 PDF URL 提取 idea
-    - input_type="text": 直接使用文本形式的 idea
+    Supports two input modes:
+    - input_type="pdf": Extract idea from PDF URL
+    - input_type="text": Use text-based idea directly
     """
 
     def __init__(
@@ -294,23 +294,23 @@ class SingleIdeaPipeline:
         use_ablation_grounding: bool = False,
     ):
         """
-        初始化 SingleIdeaPipeline。
+        Initialize SingleIdeaPipeline.
 
         Args:
-            pdf_url: PDF URL (当 input_type="pdf" 时使用)
-            idea_text: 文本形式的 idea (当 input_type="text" 时使用)
-            input_type: 输入类型，"pdf" 或 "text"
-            cache_path: Cache 文件路径
-            persona_path: Persona 文件路径
-            research_params: ResearchAgent 的参数（包含 after, before, web_temperature, code_temperature, title, depth 等）
-                - before: 用于划分 future papers 的时间点（时间戳 >= before 的论文为 future papers）
-            num_personas: Persona 数量
-            model_config: 模型配置（可选，默认使用环境变量）
-            get_future_paper: 是否搜索 future papers，默认为 False
-            get_revision_advise: 是否需要生成修订建议，默认为 False
-            use_ablation_grounding: 是否使用消融实验的 grounding 模式（直接对所有报告 summary，不按 part 分组），默认为 False
+            pdf_url: PDF URL (used when input_type="pdf")
+            idea_text: Text-based idea (used when input_type="text")
+            input_type: Input type, "pdf" or "text"
+            cache_path: Cache file path
+            persona_path: Persona file path
+            research_params: ResearchAgent parameters (including after, before, web_temperature, code_temperature, title, depth, etc.)
+                - before: Timestamp cutoff for separating future papers (papers with timestamp >= before are future papers)
+            num_personas: Number of personas
+            model_config: Model configuration (optional, defaults to environment variables)
+            get_future_paper: Whether to search future papers, default False
+            get_revision_advise: Whether to generate revision advice, default False
+            use_ablation_grounding: Whether to use ablation grounding mode (ground all report summaries directly without part grouping), default False
         """
-        # 验证输入参数
+        # Validate input parameters
         if input_type not in ["pdf", "text"]:
             raise ValueError(f"input_type must be 'pdf' or 'text', got: {input_type}")
 
@@ -324,15 +324,15 @@ class SingleIdeaPipeline:
         self.pdf_url = pdf_url
         self.idea_text = idea_text
         self.cache_path = cache_path or Path("cache/default.json")
-        self.persona_path = persona_path or Path("cache/reviewer_personas.json")
+        self.persona_path = persona_path or Path("config/reviewer_personas.json")
         self.research_params = research_params or {}
-        self.future_cutoff = research_params.get("before")  # 从 research_params 中获取 before
+        self.future_cutoff = research_params.get("before")  # Get before from research_params
         self.num_personas = num_personas
         self.get_future_paper = get_future_paper
         self.get_revision_advise = get_revision_advise
         self.use_ablation_grounding = use_ablation_grounding
 
-        # 初始化模型配置
+        # Initialize model configuration
         if model_config is None:
             model_config = {
                 "models": {
@@ -350,17 +350,17 @@ class SingleIdeaPipeline:
         evaluation_model_config = copy.deepcopy(model_config)
         self.model_config = model_config
 
-        # 注册 Agent 类型
+        # Register Agent types
         AgentFactory.register_agent_type("researchv3", ResearchAgent)
         AgentFactory.register_agent_type("groundingv2", GroundingAgent)
         AgentFactory.register_agent_type("evaluationv2", EvaluationAgent)
         AgentFactory.register_agent_type("reportv2", ReportAgent)
 
-        # 创建 Factory
+        # Create Factory
         self.model_factory = ModelFactory()
         self.agent_factory = AgentFactory()
 
-        # 配置各 Agent
+        # Configure each Agent
         extraction_config = {
             "name": "ExtractionAgent",
             "model_provider": "dsr1",
@@ -407,7 +407,7 @@ class SingleIdeaPipeline:
             # "_global_config": evaluation_model_config,
         }
 
-        # 创建 Agent 实例
+        # Create Agent instances
         logger.info("Creating agent instances...")
         self.extraction_agent = self.agent_factory.create_agent("extraction", extraction_config, self.model_factory)
         self.research_agent = self.agent_factory.create_agent("researchv3", research_config, self.model_factory)
@@ -415,30 +415,30 @@ class SingleIdeaPipeline:
         self.evaluation_agent = self.agent_factory.create_agent("evaluationv2", evaluation_config, self.model_factory)
         self.report_agent = self.agent_factory.create_agent("reportv2", report_config, self.model_factory)
 
-        # 保存配置供后续使用
+        # Save configuration for later use
         self.grounding_config = grounding_config
         self.evaluation_config = evaluation_config
         self.report_config = report_config
 
     async def run(self) -> Dict[str, Any]:
         """
-        执行完整的 pipeline。
+        Execute the complete pipeline.
 
         Returns:
-            包含所有结果的字典：
-            - idea: Idea 对象
-            - search_results: SearchResults 对象
-            - reports_data: 报告数据
-            - grounding_result: Grounding 结果
-            - evaluation_result: 评估结果
-            - final_report: 最终报告
-            - final_decision: 最终决策
-            - revision_advice: 修订建议
-            - future_papers: 未来论文列表
+            Dictionary containing all results:
+            - idea: Idea object
+            - search_results: SearchResults object
+            - reports_data: Report data
+            - grounding_result: Grounding results
+            - evaluation_result: Evaluation results
+            - final_report: Final report
+            - final_decision: Final decision
+            - revision_advice: Revision advice
+            - future_papers: Future papers list
         """
         start_time = time.perf_counter()
         with track_usage() as usage_tracker:
-            # 初始化 cache
+            # Initialize cache
             self.cache_path.parent.mkdir(parents=True, exist_ok=True)
             cached_data = load_pipeline_result(self.cache_path)
             logger.info("Loaded pipeline cache for acceleration check")
@@ -451,13 +451,13 @@ class SingleIdeaPipeline:
                 print("STEP 1: ExtractionAgent - Text -> Idea")
             print("=" * 80)
 
-            # 检查是否有缓存的 extraction_result
+            # Check if cached extraction_result exists
             if has_cache(cached_data, "extraction_result", lambda x: isinstance(x, dict) and any(key in x for key in ["basic_idea", "motivation", "research_question"])):
                 logger.info("✓ Found cached extraction_result, skipping ExtractionAgent")
                 extraction_result = cached_data["extraction_result"]
                 print("✓ Using cached extraction result")
             else:
-                # 根据 input_type 构造不同的 extraction_context
+                # Construct different extraction_context based on input_type
                 if self.input_type == "pdf":
                     extraction_context = {"url": self.pdf_url}
                 else:  # input_type == "text"
@@ -469,7 +469,7 @@ class SingleIdeaPipeline:
                 logger.info(json.dumps(extraction_result, indent=2, ensure_ascii=False))
                 print(json.dumps(extraction_result, indent=2, ensure_ascii=False))
 
-                # 保存 extraction_result 到缓存
+                # Save extraction_result to cache
                 update_pipeline_result(self.cache_path, extraction_result=extraction_result)
                 cached_data["extraction_result"] = extraction_result
 
@@ -487,7 +487,7 @@ class SingleIdeaPipeline:
             print("STEP 2: ResearchAgent - Idea -> SearchResults")
             print("=" * 80)
 
-            # 初始化 future_papers
+            # Initialize future_papers
             future_papers: List[Dict[str, Any]] = []
 
             if has_cache(cached_data, "search_results_dict"):
@@ -495,7 +495,7 @@ class SingleIdeaPipeline:
                 search_results_dict = cached_data["search_results_dict"]
                 search_results = SearchResults.from_dict(search_results_dict)
 
-                # 只有当 get_future_paper 为真时才分离 future_papers
+                # Only separate future_papers when get_future_paper is True
                 if self.get_future_paper:
                     cached_future_cutoff = cached_data.get("future_cutoff")
                     if cached_future_cutoff == self.future_cutoff:
@@ -546,7 +546,7 @@ class SingleIdeaPipeline:
             else:
                 search_results = await self.research_agent.execute(idea, self.research_params)
 
-                # 只有当 get_future_paper 为真时才按 before 时间划分 future_papers，并从主结果中分离
+                # Only separate future_papers by before time when get_future_paper is True, and separate from main results
                 if self.get_future_paper:
                     papers = search_results.papers
                     future_papers = []
@@ -599,7 +599,7 @@ class SingleIdeaPipeline:
                 except Exception:
                     logger.info("SearchResults summary unavailable, skipped printing.")
 
-            # 3. 提取 reports
+            # 3. Extract reports
             print("\n" + "=" * 80)
             print("STEP 3: Extract Reports from SearchResults")
             print("=" * 80)
@@ -626,7 +626,7 @@ class SingleIdeaPipeline:
                 update_pipeline_result(self.cache_path, reports_data=reports_data)
                 cached_data["reports_data"] = reports_data
 
-            # 4. GroundingAgent (或消融实验模式)
+            # 4. GroundingAgent (or ablation experiment mode)
             print("\n" + "=" * 80)
             if self.use_ablation_grounding:
                 print("STEP 4: Ablation Grounding - All Reports -> Summary (No Part Grouping)")
@@ -642,7 +642,7 @@ class SingleIdeaPipeline:
                 "experimental_setting": idea.experimental_setting_list or [],
                 "expected_results": idea.expected_results_list or [],
             }
-            # 过滤空列表
+            # Filter out empty lists
             claims_dict = {k: v for k, v in claims_dict.items() if v}
 
             grounding_params = {
@@ -651,7 +651,7 @@ class SingleIdeaPipeline:
             }
 
             if self.use_ablation_grounding:
-                # 消融实验模式：直接对所有报告 summary
+                # Ablation experiment mode: directly summarize all reports
                 cached_gr = cached_data.get("grounding_result", {}) or {}
                 if has_cache(cached_gr, "_all", lambda x: isinstance(x, dict) and any(isinstance(v, list) and len(v) > 0 for v in x.values())):
                     logger.info("✓ Found cached ablation grounding_result, skipping")
@@ -662,10 +662,10 @@ class SingleIdeaPipeline:
                     )
                     print(f"✓ Using cached ablation grounding result: {total_entries} total entries")
                 else:
-                    # 获取完整的 idea 文本
+                    # Get full idea text
                     idea_text = idea.get_full_text()
                     
-                    # 调用消融 grounding 方法
+                    # Call ablation grounding method
                     grounding_result = await self.grounding_agent.build_ablation_grounding_results(
                         reports_data=reports_data,
                         idea_text=idea_text,
@@ -685,7 +685,7 @@ class SingleIdeaPipeline:
                 
                 cached_data["grounding_result"] = cached_gr
             else:
-                # 原有模式：按 part 分组处理
+                # Original mode: process by part grouping
                 grounding_context = {
                     "claims": claims_dict,
                     "reports": reports_data,
@@ -693,23 +693,23 @@ class SingleIdeaPipeline:
                 all_grounding_results = {}
                 cached_gr = cached_data.get("grounding_result", {}) or {}
                 for part, claims in claims_dict.items():
-                    # 检查缓存：grounding_result[part] 应该是字典 {web_report: [...], code_report: [...], paper_report: [...]}
+                    # Check cache: grounding_result[part] should be dict {web_report: [...], code_report: [...], paper_report: [...]}
                     if has_cache(cached_gr, part, lambda x: isinstance(x, dict) and any(isinstance(v, list) and len(v) > 0 for v in x.values())):
                         logger.info(f"✓ Cached grounding for part {part}, skipping")
                         all_grounding_results[part] = cached_gr[part]
-                        # 计算总条目数
+                        # Calculate total entry count
                         total_entries = sum(len(reports) if isinstance(reports, list) else 0 
                                            for reports in cached_gr[part].values())
                         print(f"✓ Using cached grounding for '{part}': {total_entries} total entries")
                         continue
-                    # 单 part 运行
+                    # Single part run
                     grounding_context_part = {
                         "claims": {part: claims},
                         "reports": reports_data,
                     }
                     try:
                         grounding_result_part = await self.grounding_agent.execute(grounding_context_part, grounding_params)
-                        # grounding_result_part[part] 应该是字典 {web_report: [...], code_report: [...], paper_report: [...]}
+                        # grounding_result_part[part] should be dict {web_report: [...], code_report: [...], paper_report: [...]}
                         part_results = grounding_result_part.get(part, {}) if isinstance(grounding_result_part, dict) else {}
                         if not isinstance(part_results, dict):
                             logger.warning(f"Unexpected format for part {part} results, expected dict, got {type(part_results)}")
@@ -720,7 +720,7 @@ class SingleIdeaPipeline:
                             grounding_result={**cached_gr, **{part: part_results}},
                         )
                         cached_gr[part] = part_results
-                        # 计算总条目数
+                        # Calculate total entry count
                         total_entries = sum(len(reports) if isinstance(reports, list) else 0 
                                            for reports in part_results.values())
                         print(f"Grounding finished for '{part}': {total_entries} total entries")
@@ -745,7 +745,7 @@ class SingleIdeaPipeline:
             cached_evaluation_result = cached_data.get("evaluation_result", {}) or {}
             cached_evaluation_results = cached_evaluation_result.get("evaluation_results", [])
         
-            # 检查已缓存的 persona 数量
+            # Check number of cached personas
             num_cached_personas = len(cached_evaluation_results)
             num_personas_to_evaluate = len(personas)
         
@@ -754,10 +754,10 @@ class SingleIdeaPipeline:
                 evaluation_results = cached_evaluation_results[:num_personas_to_evaluate]
                 print(f"✓ Using cached evaluation results: {len(evaluation_results)} personas")
             else:
-                # 使用已缓存的结果
+                # Use cached results
                 evaluation_results = cached_evaluation_results.copy()
-                
-                # 继续评估剩余的 persona
+
+                # Continue evaluating remaining personas
                 for idx in range(num_cached_personas + 1, num_personas_to_evaluate + 1):
                     persona = personas[idx - 1]
                     print(f"\n[{idx}/{num_personas_to_evaluate}] Evaluating with persona {idx}...")
@@ -766,7 +766,7 @@ class SingleIdeaPipeline:
                         "grounding_results": grounding_result,
                         "persona": persona,
                     }
-                    # 添加自定义评估维度（测试用）
+                    # Add custom evaluation dimensions (for testing)
                     eval_params = {
                         "temperature": self.evaluation_config.get("temperature", 0.7),
                         "user_metric": [
@@ -787,15 +787,15 @@ class SingleIdeaPipeline:
                             }
                         )
 
-                        # 简单均分汇总（包含标准维度和自定义维度）
+                        # Simple average summary (including standard and custom dimensions)
                         scores = []
-                        # 标准五个维度
+                        # Standard five dimensions
                         for key in ["clarity", "novelty", "validity", "feasibility", "significance"]:
                             score = eval_result.get(key, {}).get("score")
                             if score is not None:
                                 scores.append(float(score))
 
-                        # 自定义维度
+                        # Custom dimensions
                         custom_metrics = []
                         for user_metric in eval_params.get("user_metric", []):
                             metric_name = user_metric.get("metric")
@@ -810,25 +810,25 @@ class SingleIdeaPipeline:
                         if custom_metrics:
                             print(f"  Custom Metrics: {', '.join(custom_metrics)}")
 
-                        # 每个 persona 完成后立即保存
+                        # Save after each persona completes
                         evaluation_result = {"evaluation_results": evaluation_results}
                         update_pipeline_result(self.cache_path, evaluation_result=evaluation_result)
                         cached_data["evaluation_result"] = evaluation_result
                         logger.info(f"Saved evaluation result for persona {idx}/{num_personas_to_evaluate}")
                     except Exception as e:  # noqa: BLE001
                         logger.error(f"Evaluation failed for persona {idx}: {e}")
-                        # 即使失败也保存已完成的评估结果
+                        # Save completed evaluation results even if failed
                         evaluation_result = {"evaluation_results": evaluation_results}
                         update_pipeline_result(self.cache_path, evaluation_result=evaluation_result)
                         cached_data["evaluation_result"] = evaluation_result
-                        raise  # 重新抛出异常，让调用者知道有错误
+                        raise  # Re-raise the exception so caller knows there was an error
 
             # 6. ReportAgent
             print("\n" + "=" * 80)
             print("STEP 6: ReportAgent - EvaluationResults -> Final Report")
             print("=" * 80)
 
-            # 传入 future_papers（如果有）和 get_revision_advise 标志
+            # Pass future_papers (if any) and get_revision_advise flag
             report_context = {
                 "idea": idea,
                 "evaluation_results": evaluation_results,
@@ -860,7 +860,7 @@ class SingleIdeaPipeline:
                     evaluation_result={**(cached_data.get("evaluation_result") or {}), **{"evaluation_results": evaluation_results}},
                 )
 
-                # 更新缓存
+                # Update cache
                 cached_data["final_report"] = final_report
                 cached_data["md_tree"] = md_tree
                 cached_data["final_decision"] = report_result.get("final_decision")
@@ -899,35 +899,35 @@ class SingleIdeaPipeline:
 
 
 # --------------------------------------------------------------------------- #
-# 主流程
+# Main flow
 # --------------------------------------------------------------------------- #
 async def main() -> None:
     print("\n" + "=" * 80)
-    print("AGENT PIPELINE TEST V2 - 串联测试")
+    print("AGENT PIPELINE TEST V2 - Serial test")
     print("=" * 80)
 
-    # 加载环境变量
+    # Load environment variables
     if not load_environment_variables():
         logger.warning("Failed to load environment variables, continuing anyway...")
 
-    # 查找 persona 文件
-    cache_dir = project_root / "cache"
-    persona_path = cache_dir / "reviewer_personas.json"
+    # Find persona file
+    config_dir = project_root / "config"
+    persona_path = config_dir / "reviewer_personas.json"
     if not persona_path.exists():
         env_personas = os.getenv("PERSONAS_FILE_PATH")
         if env_personas and Path(env_personas).exists():
             persona_path = Path(env_personas)
         else:
-            alt_cache_dir = project_root.parent / "cache"
-            alt_personas_file = alt_cache_dir / "reviewer_personas_redistributed.json"
+            alt_config_dir = project_root.parent / "config"
+            alt_personas_file = alt_config_dir / "reviewer_personas_redistributed.json"
             if alt_personas_file.exists():
                 persona_path = alt_personas_file
 
     # ========================================================================
-    # 测试模式选择：取消注释想要运行的测试
+    # Test mode selection: uncomment the test you want to run
     # ========================================================================
 
-    # 模式 1: PDF URL 输入测试（原有逻辑）
+    # Mode 1: PDF URL input test (original logic)
     # pdf_url = "http://openreview.net/pdf?id=AL1fq05o7H"
     # cache_path = project_root / "cache" / "mamba.json"
     # research_params = {
@@ -950,7 +950,7 @@ async def main() -> None:
     #     use_ablation_grounding=False,
     # )
 
-    # 模式 2: Text 输入测试（新功能）
+    # Mode 2: Text input test (new feature)
     idea_text = """
     Data-analytic agents are emerging as a key catalyst for automated scientific discovery and for the vision of Innovating AI. Current approaches, however, rely heavily on prompt engineering over proprietary models, while open-source models struggle to face diverse-format, large-scale data files and long-horizon, multi-step reasoning that real-world analytics demands. This paper introduces DataMind, a scalable data synthesis and agent training recipe designed to build generalist data-analytic agents. DataMind tackles three key challenges in building open-source data-analytic agents, including insufficient data resources, improper training strategy, and unstable code-based multi-turn rollout. Concretely, DataMind applies 1) a fine-grained task taxonomy and a recursive easy-to-hard task composition mechanism to increase the diversity and difficulty of synthesized queries; 2) a knowledge-augmented trajectory sampling strategy followed by model-based and rule-based filtering; 3) a dynamically adjustable training objective combining both SFT and RL losses; 4) a memory-frugal and stable code-based multi-turn rollout framework.
     """

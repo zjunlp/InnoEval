@@ -67,7 +67,7 @@ class R1Model(BaseModel):
         self.temperature = temperature
         self.timeout = timeout
         self.max_schema_retries = max_schema_retries
-        # 针对 generate 的通用重试次数（仅对暂时性错误生效）
+        # Generic retry count for generate (only for transient errors)
         self.max_generate_retries = max_generate_retries
         
         # Initialize the client with only the supported parameters for version 1.3.3
@@ -111,7 +111,7 @@ class R1Model(BaseModel):
         temperature = temperature if temperature is not None else self.temperature
         max_tokens = max_tokens if max_tokens is not None else self.max_tokens
         
-        # 通用重试机制：仅对网络错误、超时、429 和 5xx 进行重试
+        # Generic retry mechanism: only retry for network errors, timeouts, 429 and 5xx
         attempts_remaining = self.max_generate_retries
         last_error: Optional[Exception] = None
 
@@ -176,14 +176,14 @@ class R1Model(BaseModel):
             except openai.APIStatusError as e:
                 last_error = e
                 status = getattr(e, "status_code", None)
-                # 只对 429 和 5xx 的 HTTP 状态码进行重试；400 这类 client error（包括 rix_api_error/bad_response_status_code）
-                # 通常代表请求本身有问题，继续重试无意义，直接抛出。
+                # Only retry for 429 and 5xx HTTP status codes; 400 client errors (including rix_api_error/bad_response_status_code)
+                # usually indicate issues with the request itself, retrying is meaningless, raise directly.
                 if status == 400:
-                    # DeepSeek RIX: 输入字符数超过限制（如 "Invalid param: input characters limit is 393216"）
+                    # DeepSeek RIX: input character limit exceeded (e.g., "Invalid param: input characters limit is 393216")
                     error_text = str(e)
                     if "input characters limit is" in error_text:
-                        # 尝试截断 user content 到 370000 字符以内，再重试
-                        # 只处理最后一个 user 消息，避免误伤 system/assistant
+                        # Try truncating user content to within 370000 characters and retry
+                        # Only process the last user message to avoid affecting system/assistant
                         for i in range(len(messages) - 1, -1, -1):
                             msg = messages[i]
                             if msg.get("role") == "user" and isinstance(msg.get("content"), str):
@@ -210,23 +210,23 @@ class R1Model(BaseModel):
                     f"{self.max_generate_retries + 1}): {e}"
                 )
             except Exception as e:
-                # 其它未知异常：记录后直接抛出，避免死循环
+                # Other unknown exceptions: log and raise directly to avoid infinite loops
                 logger.error(f"Error generating response from DeepSeek R1: {e}")
                 raise
 
-            # 如果还能重试，则等待一会儿；否则跳出循环并抛出最后一次错误
+            # If retries remain, wait a moment; otherwise exit loop and raise the last error
             if attempts_remaining > 0:
                 await asyncio.sleep(1)
                 attempts_remaining -= 1
                 continue
             else:
-                # 用最后一次异常作为失败原因
+                # Use the last exception as the failure reason
                 if last_error is not None:
                     logger.error(
                         f"R1Model.generate failed after {self.max_generate_retries + 1} attempts: {last_error}"
                     )
                     raise last_error
-                # 理论上不会走到这里，但为了安全兜底
+                # Should not reach here theoretically, but as a safety fallback
                 raise RuntimeError("R1Model.generate failed with unknown error and no retry information")
     
     async def generate_with_json_output(self, 
@@ -266,12 +266,12 @@ class R1Model(BaseModel):
         
         while remaining_retries >= 0:
             try:
-                # API 调用层面的重试（处理网络错误、超时、429、5xx）
+                # API-level retry (handle network errors, timeouts, 429, 5xx)
                 api_attempts = self.max_generate_retries
                 last_api_error: Optional[Exception] = None
                 response = None
 
-                # 在 API 调用重试内部维护当前使用的 prompt，方便在 400 超长错误时进行截断重试
+                # Maintain the current prompt within API retry loop to allow truncation on 400 long-input errors
                 current_prompt = prompt
 
                 while api_attempts >= 0:
@@ -330,10 +330,10 @@ class R1Model(BaseModel):
                     except openai.APIStatusError as e:
                         last_api_error = e
                         status = getattr(e, "status_code", None)
-                        # 只对 429 和 5xx 的 HTTP 状态码进行重试；400 这类 client error（包括 rix_api_error/bad_response_status_code）
-                        # 通常代表请求本身有问题，继续重试无意义，直接抛出。
+                        # Only retry for 429 and 5xx HTTP status codes; 400 client errors (including rix_api_error/bad_response_status_code)
+                        # usually indicate issues with the request itself, retrying is meaningless, raise directly.
                         if status == 400:
-                            # DeepSeek RIX: 输入字符数超过限制（如 "Invalid param: input characters limit is 393216"）
+                            # DeepSeek RIX: input character limit exceeded (e.g., "Invalid param: input characters limit is 393216")
                             error_text = str(e)
                             if "input characters limit is" in error_text and isinstance(current_prompt, str):
                                 original_len = len(current_prompt)
@@ -356,13 +356,13 @@ class R1Model(BaseModel):
                             f"{self.max_generate_retries + 1}): {e}"
                         )
 
-                    # API 调用失败且可重试
+                    # API call failed and is retryable
                     if api_attempts > 0:
                         await asyncio.sleep(1)
                         api_attempts -= 1
                         continue
                     else:
-                        # API 层面多次重试仍失败，抛出最后一次错误
+                        # Multiple API-level retries still failed, raise the last error
                         if last_api_error is not None:
                             logger.error(
                                 f"R1Model.generate_with_json_output failed after {self.max_generate_retries + 1} "

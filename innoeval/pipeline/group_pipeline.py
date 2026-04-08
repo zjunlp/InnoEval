@@ -14,7 +14,7 @@ Usage:
 
 Required config:
     - Set API keys in config/LLM.env
-    - Ensure reviewer_personas.json exists in cache/ directory
+    - Ensure reviewer_personas.json exists in config/ directory
 """
 
 import asyncio
@@ -525,7 +525,6 @@ if __name__ == "__main__":
 
         traceback.print_exc()
         sys.exit(1)
-
 
 
 

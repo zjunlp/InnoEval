@@ -332,7 +332,7 @@ def fetch_arxiv_papers(query: str, max_results: int = 20, sort: str = "relevance
     
     try:
         response = requests.get(search_url, params=search_params)
-        print(f"[DEBUG] 实际发送的url: {response.url}")  # Print the final request URL.
+        print(f"[DEBUG] Actual URL sent: {response.url}")  # Print the final request URL.
         if response.status_code != 200:
             logger.error(f"arXiv search error: {response.status_code}")
             return []
@@ -378,7 +378,7 @@ def fetch_arxiv_papers_debug_api(query: str, max_results: int = 20, sort: str = 
     }
     try:
         response = requests.get(search_url, params=search_params)
-        print(f"[DEBUG] 实际发送的url: {response.url}")
+        print(f"[DEBUG] Actual URL sent: {response.url}")
         if response.status_code != 200:
             logger.error(f"arXiv search error: {response.status_code}")
             return []
@@ -460,7 +460,7 @@ def fetch_alex_papers_debug_api(
     
     try:
         response = requests.get(base_url, params=params, timeout=30)
-        print(f"[DEBUG] 实际发送的url: {response.url}")
+        print(f"[DEBUG] Actual URL sent: {response.url}")
         
         if response.status_code != 200:
             logger.error(f"OpenAlex search error: {response.status_code}")
@@ -607,8 +607,8 @@ def parse_arxiv_xml(xml_data: str) -> list:
 
 
 def parse_arxiv_xml_debug(xml_data: str) -> list:
-    print("[DEBUG] parse_arxiv_xml_debug: 开始解析 arXiv XML 数据")
-    print(f"[DEBUG] 原始 XML 长度: {len(xml_data)} 字符")
+    print("[DEBUG] parse_arxiv_xml_debug: Starting to parse arXiv XML data")
+    print(f"[DEBUG] Original XML length: {len(xml_data)} characters")
     papers = []
     soup = BeautifulSoup(xml_data, "xml")
     for idx, entry in enumerate(soup.find_all("entry")):
@@ -668,17 +668,17 @@ def parse_arxiv_xml_debug(xml_data: str) -> list:
                 source='arXiv'
             )
             paper_dict = paper.to_dict()
-            print(f"[DEBUG] 解析后的字典: {paper_dict}")
+            print(f"[DEBUG] Parsed dictionary: {paper_dict}")
             papers.append(paper_dict)
 
         except Exception as e:
             logger.error(f"Error parsing arXiv entry: {str(e)}")
-    print(f"[DEBUG] 总共解析到 {len(papers)} 篇论文")
+    print(f"[DEBUG] Total papers parsed: {len(papers)}")
     return papers
 
 
 def fetch_arxiv_papers_debug(query: str, max_results: int = 20, sort: str = "relevance", categories: list = None) -> list:
-    print(f"[DEBUG] fetch_arxiv_papers_debug: 查询关键词: '{query}', max_results={max_results}, sort={sort}, categories={categories}")
+    print(f"[DEBUG] fetch_arxiv_papers_debug: query='{query}', max_results={max_results}, sort={sort}, categories={categories}")
     search_url = "http://export.arxiv.org/api/query"
     sort_param = "relevance" if sort == "relevance" else "submittedDate"
     cat_filter = ""
@@ -691,22 +691,22 @@ def fetch_arxiv_papers_debug(query: str, max_results: int = 20, sort: str = "rel
         "sortOrder": "descending"
     }
     try:
-        print(f"[DEBUG] 请求 URL: {search_url}")
-        print(f"[DEBUG] 请求参数: {search_params}")
+        print(f"[DEBUG] Request URL: {search_url}")
+        print(f"[DEBUG] Request parameters: {search_params}")
         response = requests.get(search_url, params=search_params)
-        print(f"[DEBUG] 响应状态码: {response.status_code}")
+        print(f"[DEBUG] Response status code: {response.status_code}")
         if response.status_code != 200:
             logger.error(f"arXiv search error: {response.status_code}")
-            print(f"[DEBUG] 错误响应文本: {response.text[:2000]}")
+            print(f"[DEBUG] Error response text: {response.text[:2000]}")
             return []
         xml_data = response.text
-        print(f"[DEBUG] 原始响应内容（前2000字符）:\n{xml_data[:2000]}")
+        print(f"[DEBUG] Raw response content (first 2000 chars):\n{xml_data[:2000]}")
         papers = parse_arxiv_xml_debug(xml_data)
-        print(f"[DEBUG] 解析完成，共 {len(papers)} 篇")
+        print(f"[DEBUG] Parsing complete, {len(papers)} papers found")
         return papers
     except Exception as e:
         logger.error(f"Error searching arXiv: {e}")
-        print(f"[DEBUG] 异常: {e}")
+        print(f"[DEBUG] Exception: {e}")
         return []
 
 def parse_pubmed_xml(xml_data: str) -> list:
@@ -980,9 +980,9 @@ def download_pdf_by_doi(doi: str, download_dir: str | Path = PDF_SAVE_DIR):
             pdf_links.append(urljoin(publisher_url, href))
     
     if pdf_links:
-        print(f"找到 {len(pdf_links)} 个可能的 PDF 链接")
+        print(f"Found {len(pdf_links)} possible PDF links")
         pdf_url = pdf_links[0]
-        print(f"尝试下载: {pdf_url}")
+        print(f"Attempting download: {pdf_url}")
         
         pdf_response = requests.get(pdf_url, headers=headers, stream=True)
         if pdf_response.status_code == 200 and 'application/pdf' in pdf_response.headers.get('Content-Type', ''):
@@ -1005,12 +1005,12 @@ def download_pdf_by_doi(doi: str, download_dir: str | Path = PDF_SAVE_DIR):
                     if chunk:
                         f.write(chunk)
             
-            print(f"PDF已下载到: {filepath}")
+            print(f"PDF downloaded to: {filepath}")
             return str(filepath)
         else:
-            print("下载失败：无法获取有效的 PDF 文件。")
+            print("Download failed: Unable to retrieve valid PDF file.")
     else:
-        print("未找到 PDF 链接。")
+        print("No PDF links found.")
     
     return None
 
