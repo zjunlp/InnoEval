@@ -22,6 +22,10 @@
 
 ---
 
+## 🔔 News
+
+- **[2026-05]** We release SciAtas! A Large-Scale Knowledge Graph as the foundation for Automated Scientific Research. Try it through [here](https://github.com/zjunlp/SciAtlas)!
+
 ![method](./asset/method.png)
 
 **InnoEval** is an automated evaluation framework designed for assessing research ideas and innovation proposals. It leverages multi-agent systems and LLMs to comprehensively evaluate the novelty, feasibility, and significance of research contributions.
